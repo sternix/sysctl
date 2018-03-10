@@ -51,7 +51,8 @@ func Uint32Args(name string, args ...int) (uint32, error) {
 	}
 
 	n := uintptr(4)
-	buf := make([]byte, 4)
+	//buf := make([]byte, 4)
+	var buf [4]byte
 	if err := sysctl(mib, &buf[0], &n, nil, 0); err != nil {
 		return 0, err
 	}
@@ -68,7 +69,8 @@ func Uint64(name string, args ...int) (uint64, error) {
 	}
 
 	n := uintptr(8)
-	buf := make([]byte, 8)
+	//buf := make([]byte, 8)
+	var buf [8]byte
 	if err := sysctl(mib, &buf[0], &n, nil, 0); err != nil {
 		return 0, err
 	}
@@ -169,12 +171,12 @@ func SetString(name string, value string) error {
 		return err
 	}
 
-	valueslc, err := ByteSliceFromString(value)
+	val, err := ByteSliceFromString(value)
 	if err != nil {
 		return err
 	}
 
-	if err = sysctl(mib, nil, nil, &valueslc[0], uintptr(len(valueslc))); err != nil {
+	if err = sysctl(mib, nil, nil, &val[0], uintptr(len(val))); err != nil {
 		return err
 	}
 
