@@ -37,7 +37,7 @@ func Args(name string, args ...int) (string, error) {
 	if n > 0 && buf[n-1] == '\x00' {
 		n--
 	}
-	return string(buf[0:n]), nil
+	return string(buf[:n]), nil
 }
 
 func Uint32(name string) (uint32, error) {
@@ -130,7 +130,7 @@ func nametomib(name string) (mib []_C_int, err error) {
 	if err = sysctl([]_C_int{0, 3}, p, &n, &bytes[0], uintptr(len(name))); err != nil {
 		return nil, err
 	}
-	return buf[0 : n/siz], nil
+	return buf[:n/siz], nil
 }
 
 // sysctlmib translates name to mib number and appends any additional args.
@@ -201,6 +201,19 @@ func SetUint64(name string, value uint64) error {
 	}
 
 	if err = sysctl(mib, nil, nil, (*byte)(unsafe.Pointer(&value)), 8); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetRaw(name string, value []byte) error {
+	mib, err := nametomib(name)
+	if err != nil {
+		return err
+	}
+
+	if err = sysctl(mib, nil, nil, &value[0], uintptr(len(value))); err != nil {
 		return err
 	}
 

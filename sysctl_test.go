@@ -80,3 +80,43 @@ func TestBigString(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func asciiToGoString(arr []byte) string {
+	n := len(arr)
+
+	// Throw away terminating NUL.
+	if n > 0 && arr[n-1] == '\x00' {
+		n--
+	}
+
+	return string(arr[:n])
+}
+
+func TestRaw(t *testing.T) {
+	hostname, err := Raw("kern.hostname")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = SetRaw("kern.hostname", []byte("sysctl.golang.org"))
+	if err != nil {
+		t.Error(err)
+	}
+
+	hn, err := Raw("kern.hostname")
+	if err != nil {
+		t.Error(err)
+	}
+
+	strhn := asciiToGoString(hn)
+
+	if strhn != "sysctl.golang.org" {
+		t.Errorf("get '%s' expected sysctl.golang.org", string(strhn))
+	}
+
+	// restore orj hostname
+	err = SetRaw("kern.hostname", hostname)
+	if err != nil {
+		t.Error(err)
+	}
+}
